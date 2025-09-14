@@ -64,8 +64,14 @@ fn main(){
 
     let initial_state=if start_editor { AppMode::Editor } else { AppMode::Game };
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin{ primary_window:Some(Window{
-            title:if is_host{"Boxing — HOST (F1 Editor)".into()}else{"Boxing — CLIENT (F1 Editor)".into()}, resolution:(1280.0,720.0).into(), ..Default::default()}), ..Default::default()}))
+        .add_plugins(DefaultPlugins.set(WindowPlugin{
+            primary_window:Some(Window{
+                title:if is_host{"Boxing - Host (F1 Editor)".into()}else{"Boxing - Client (F1 Editor)".into()},
+                resolution:(1080.0,720.0).into(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }))
         .add_plugins(StatePlugin::<AppMode>::default())
         .add_plugins(EguiPlugin)
         .insert_state(initial_state)
