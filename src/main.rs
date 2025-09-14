@@ -64,7 +64,6 @@ fn main(){
 
     let initial_state=if start_editor { AppMode::Editor } else { AppMode::Game };
     App::new()
-        .add_state::<AppMode>()
         .insert_state(initial_state)
         .insert_resource(IsHost(is_host))
         .insert_resource(PlayerId(if is_host {0}else{1}))
@@ -223,12 +222,6 @@ fn editor_ui(mut ctx:EguiContexts, mut cfg:ResMut<AnimConfig>, mut next:ResMut<N
         ui.separator(); ui.label("Drop `character.glb` into assets/ to replace the cubes.");
     });
 }
-
-fn host_thread(addr:String, to_net_rx:Receiver<ToNet>, from_net_tx:Sender<FromNet>){
-    let listener=TcpListener::bind(addr.as_str()).expect("Failed to bind host port"); listener.set_nonblocking(true).ok(); println!("[HOST] Waiting for client on {} ...",addr);
-}
-
-use std::io::Result as IoResult;
 
 fn host_thread(addr:String, to_net_rx:Receiver<ToNet>, from_net_tx:Sender<FromNet>){
     let listener = TcpListener::bind(addr.as_str()).expect("Failed to bind host port");
