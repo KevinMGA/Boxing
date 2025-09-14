@@ -64,7 +64,10 @@ fn main(){
 
     let initial_state=if start_editor { AppMode::Editor } else { AppMode::Game };
     App::new()
-        .add_state::<AppMode>()
+        .add_plugins(DefaultPlugins.set(WindowPlugin{ primary_window:Some(Window{
+            title:if is_host{"Boxing — HOST (F1 Editor)".into()}else{"Boxing — CLIENT (F1 Editor)".into()}, resolution:(1280.0,720.0).into(), ..Default::default()}), ..Default::default()}))
+        .add_plugins(StatePlugin::<AppMode>::default())
+        .add_plugins(EguiPlugin)
         .insert_state(initial_state)
         .insert_resource(IsHost(is_host))
         .insert_resource(PlayerId(if is_host {0}else{1}))
@@ -72,9 +75,6 @@ fn main(){
         .insert_resource(Names{left:"Player One".into(), right:"Player Two".into()})
         .insert_resource(RoundClock{time_left:180.0})
         .insert_resource(AnimConfig::load_or_default("assets/config/anim_map.json"))
-        .add_plugins(DefaultPlugins.set(WindowPlugin{ primary_window:Some(Window{
-            title:if is_host{"Boxing — HOST (F1 Editor)".into()}else{"Boxing — CLIENT (F1 Editor)".into()}, resolution:(1280.0,720.0).into(), ..Default::default()}), ..Default::default()}))
-        .add_plugins(EguiPlugin)
         .add_systems(Startup,(setup_scene,setup_ui,setup_status))
         .add_systems(Update,(toggle_editor,side_camera_follow,auto_face,local_input_system,apply_motion,ring_bounds,punch_decay,net_receive_system,ui_update,round_timer))
         .add_systems(Update,editor_ui.run_if(in_state(AppMode::Editor)))
@@ -223,12 +223,6 @@ fn editor_ui(mut ctx:EguiContexts, mut cfg:ResMut<AnimConfig>, mut next:ResMut<N
         ui.separator(); ui.label("Drop `character.glb` into assets/ to replace the cubes.");
     });
 }
-
-fn host_thread(addr:String, to_net_rx:Receiver<ToNet>, from_net_tx:Sender<FromNet>){
-    let listener=TcpListener::bind(addr.as_str()).expect("Failed to bind host port"); listener.set_nonblocking(true).ok(); println!("[HOST] Waiting for client on {} ...",addr);
-}
-
-use std::io::Result as IoResult;
 
 fn host_thread(addr:String, to_net_rx:Receiver<ToNet>, from_net_tx:Sender<FromNet>){
     let listener = TcpListener::bind(addr.as_str()).expect("Failed to bind host port");
